@@ -3,11 +3,22 @@ import { Link } from 'react-router-dom';
 import { BookOpen, Calendar, Users, GraduationCap, FlaskRound as Flask, Newspaper, ChevronRight, ArrowRight } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePages } from '../contexts/PageContext';
+import { useSpecificStats, useRealTimeMetrics } from '../contexts/AnalyticsContext';
 import { Navbar } from '../components/Navbar';
 
 export const HomePage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const { getPageBySlug } = usePages();
+  
+  // Utiliser les vraies statistiques dynamiques
+  const {
+    totalUsers,
+    activeProjects,
+    totalPages,
+    monthlyVisitors
+  } = useSpecificStats();
+
+  const { realTimeMetrics } = useRealTimeMetrics();
 
   // Get the home page content from the page context
   const homePage = getPageBySlug('accueil');
@@ -168,7 +179,7 @@ export const HomePage: React.FC = () => {
 
         {/* Quick Access for Authenticated Users */}
         {isAuthenticated && (
-          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg">
+          <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-lg mb-12">
             <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">Accès rapide</h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Link
@@ -220,27 +231,53 @@ export const HomePage: React.FC = () => {
           </div>
         )}
 
-        {/* Statistics Section */}
-        <div className="mt-12 bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-8 text-white">
+        {/* Statistics Section - Now with Real Data */}
+        <div className="bg-gradient-to-r from-blue-900 to-blue-800 rounded-xl p-8 text-white">
           <h3 className="text-2xl font-bold text-center mb-8">L'ESST en chiffres</h3>
           <div className="grid md:grid-cols-4 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2">1,245</div>
+              <div className="text-4xl font-bold mb-2">
+                {totalUsers.toLocaleString()}
+              </div>
               <div className="text-blue-200">Étudiants</div>
+              {realTimeMetrics && (
+                <div className="text-xs text-blue-300 mt-1">
+                  {realTimeMetrics.onlineUsers} en ligne
+                </div>
+              )}
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2">89</div>
+              <div className="text-4xl font-bold mb-2">
+                {activeProjects}
+              </div>
               <div className="text-blue-200">Projets actifs</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2">24</div>
-              <div className="text-blue-200">Formations</div>
+              <div className="text-4xl font-bold mb-2">
+                {totalPages}
+              </div>
+              <div className="text-blue-200">Pages</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold mb-2">12,890</div>
+              <div className="text-4xl font-bold mb-2">
+                {monthlyVisitors.toLocaleString()}
+              </div>
               <div className="text-blue-200">Visiteurs/mois</div>
             </div>
           </div>
+          
+          {realTimeMetrics && (
+            <div className="mt-6 pt-6 border-t border-blue-700">
+              <div className="text-center">
+                <div className="text-sm text-blue-200">
+                  Dernière mise à jour: {realTimeMetrics.lastUpdated.toLocaleTimeString('fr-FR')}
+                </div>
+                <div className="text-xs text-blue-300 mt-1">
+                  {realTimeMetrics.messagesExchanged} messages échangés aujourd'hui • {realTimeMetrics.filesUploaded} fichiers uploadés
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
